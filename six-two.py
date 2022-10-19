@@ -1,48 +1,33 @@
 import sys
 import os
+
+# Must set flags before importing tensorflow
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 import cv2
 import pandas as pd
+from tabulate import tabulate
+import matplotlib.pyplot as plt
 from fer import FER
 from fer.utils import draw_annotations
 
-
-# def df_process(in_data: list, video: Video):
-#     vid_df = video.to_pandas(in_data)
-#     vid_df = video.get_first_face(vid_df)
-#     vid_df = video.get_emotions(vid_df)
-
-#     display(vid_df.plot(figsize=(20, 8), fontsize=16).get_figure())
-
-#     angry = sum(vid_df.angry)
-#     disgust = sum(vid_df.disgust)
-#     fear = sum(vid_df.fear)
-#     happy = sum(vid_df.happy)
-#     sad = sum(vid_df.sad)
-#     surprise = sum(vid_df.surprise)
-#     neutral = sum(vid_df.neutral)
-
-#     emotions = ["Angry", "Disgust", "Fear", "Happy", "Sad", "Surprise", "Neutral"]
-#     emotions_values = [angry, disgust, fear, happy, sad, surprise, neutral]
-
-#     score_comparisons = pd.DataFrame(emotions, columns=["Human Emotions"])
-#     score_comparisons["Emotion Value from the Video"] = emotions_values
-#     display(score_comparisons)
-
-
 path = 0
-if len(sys.argv) > 2 and os.path.exists(sys.argv[1]):
+if len(sys.argv) >= 2 and os.path.exists(sys.argv[1]):
     path = sys.argv[1]
 
+print(path)
 detector = FER()
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(path)
 
-vid_df = pd.DataFrame()
+vid_data = []
 
 if not cap.isOpened():
     print("Cannot open camera / video file")
     exit()
 
-print("Reading from camera...")
+print(f"Reading from {'camera' if path == 0 else path}")
+print("Press q to exit the camera and print results")
+
+# Read from video feed
 while True:
     ret, frame = cap.read()
 
@@ -55,27 +40,31 @@ while True:
     frame = draw_annotations(frame, emotions)
 
     if emotions:
-        print(emotions)
-        vid_df.append(emotions["emotions"])
-        print(vid_df.style)
+        emo = emotions[0]["emotions"]
+        vid_data.append(emo)
+        print(" ".join([f"{k}: {v}" for k, v in emo.items()]) + "\t\t\t", end="\r")
     cv2.imshow("frame", frame)
     if cv2.waitKey(1) == ord("q"):
         break
 
+# Calculate stats
+vid_df = pd.DataFrame(vid_data)
+angry = sum(vid_df.angry)
+disgust = sum(vid_df.disgust)
+fear = sum(vid_df.fear)
+happy = sum(vid_df.happy)
+sad = sum(vid_df.sad)
+surprise = sum(vid_df.surprise)
+neutral = sum(vid_df.neutral)
+print()
+emotions = ["Angry", "Disgust", "Fear", "Happy", "Sad", "Surprise", "Neutral"]
+emotions_values = [angry, disgust, fear, happy, sad, surprise, neutral]
+score_comparisons = pd.DataFrame(emotions, columns=["Human Emotions"])
+score_comparisons["Emotion Value from the Video"] = emotions_values
+
+vid_df.plot()
+print(tabulate(score_comparisons, headers="keys", tablefmt="psql"))
+
+plt.show()
 cap.release()
 cv2.destroyAllWindows()
-
-[
-    {
-        "box": array([446, 134, 55, 55]),
-        "emotions": {
-            "angry": 0.03,
-            "disgust": 0.0,
-            "fear": 0.04,
-            "happy": 0.81,
-            "sad": 0.1,
-            "surprise": 0.0,
-            "neutral": 0.02,
-        },
-    }
-]
