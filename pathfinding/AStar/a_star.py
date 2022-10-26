@@ -9,6 +9,7 @@ See Wikipedia article (https://en.wikipedia.org/wiki/A*_search_algorithm)
 
 """
 
+from itertools import count
 import math
 
 import matplotlib.pyplot as plt
@@ -17,7 +18,6 @@ show_animation = True
 
 
 class AStarPlanner:
-
     def __init__(self, ox, oy, resolution, rr):
         """
         Initialize grid map for a star planning
@@ -45,8 +45,15 @@ class AStarPlanner:
             self.parent_index = parent_index
 
         def __str__(self):
-            return str(self.x) + "," + str(self.y) + "," + str(
-                self.cost) + "," + str(self.parent_index)
+            return (
+                str(self.x)
+                + ","
+                + str(self.y)
+                + ","
+                + str(self.cost)
+                + ","
+                + str(self.parent_index)
+            )
 
     def planning(self, sx, sy, gx, gy):
         """
@@ -63,10 +70,18 @@ class AStarPlanner:
             ry: y position list of the final path
         """
 
-        start_node = self.Node(self.calc_xy_index(sx, self.min_x),
-                               self.calc_xy_index(sy, self.min_y), 0.0, -1)
-        goal_node = self.Node(self.calc_xy_index(gx, self.min_x),
-                              self.calc_xy_index(gy, self.min_y), 0.0, -1)
+        start_node = self.Node(
+            self.calc_xy_index(sx, self.min_x),
+            self.calc_xy_index(sy, self.min_y),
+            0.0,
+            -1,
+        )
+        goal_node = self.Node(
+            self.calc_xy_index(gx, self.min_x),
+            self.calc_xy_index(gy, self.min_y),
+            0.0,
+            -1,
+        )
 
         open_set, closed_set = dict(), dict()
         open_set[self.calc_grid_index(start_node)] = start_node
@@ -78,19 +93,23 @@ class AStarPlanner:
 
             c_id = min(
                 open_set,
-                key=lambda o: open_set[o].cost + self.calc_heuristic(goal_node,
-                                                                     open_set[
-                                                                         o]))
+                key=lambda o: open_set[o].cost
+                + self.calc_heuristic(goal_node, open_set[o]),
+            )
             current = open_set[c_id]
 
             # show graph
             if show_animation:  # pragma: no cover
-                plt.plot(self.calc_grid_position(current.x, self.min_x),
-                         self.calc_grid_position(current.y, self.min_y), "xc")
+                plt.plot(
+                    self.calc_grid_position(current.x, self.min_x),
+                    self.calc_grid_position(current.y, self.min_y),
+                    "xc",
+                )
                 # for stopping simulation with the esc key.
-                plt.gcf().canvas.mpl_connect('key_release_event',
-                                             lambda event: [exit(
-                                                 0) if event.key == 'escape' else None])
+                plt.gcf().canvas.mpl_connect(
+                    "key_release_event",
+                    lambda event: [exit(0) if event.key == "escape" else None],
+                )
                 if len(closed_set.keys()) % 10 == 0:
                     plt.pause(0.001)
 
@@ -108,9 +127,12 @@ class AStarPlanner:
 
             # expand_grid search grid based on motion model
             for i, _ in enumerate(self.motion):
-                node = self.Node(current.x + self.motion[i][0],
-                                 current.y + self.motion[i][1],
-                                 current.cost + self.motion[i][2], c_id)
+                node = self.Node(
+                    current.x + self.motion[i][0],
+                    current.y + self.motion[i][1],
+                    current.cost + self.motion[i][2],
+                    c_id,
+                )
                 n_id = self.calc_grid_index(node)
 
                 # If the node is not safe, do nothing
@@ -127,22 +149,25 @@ class AStarPlanner:
                         # This path is the best until now. record it
                         open_set[n_id] = node
 
-        rx, ry = self.calc_final_path(goal_node, closed_set)
+        rx, ry, cost = self.calc_final_path(goal_node, closed_set)
 
-        return rx, ry
+        return rx, ry, cost
 
     def calc_final_path(self, goal_node, closed_set):
+        cost = 0
         # generate final course
         rx, ry = [self.calc_grid_position(goal_node.x, self.min_x)], [
-            self.calc_grid_position(goal_node.y, self.min_y)]
+            self.calc_grid_position(goal_node.y, self.min_y)
+        ]
         parent_index = goal_node.parent_index
         while parent_index != -1:
+            cost += 1
             n = closed_set[parent_index]
             rx.append(self.calc_grid_position(n.x, self.min_x))
             ry.append(self.calc_grid_position(n.y, self.min_y))
             parent_index = n.parent_index
 
-        return rx, ry
+        return rx, ry, cost
 
     @staticmethod
     def calc_heuristic(n1, n2):
@@ -203,8 +228,9 @@ class AStarPlanner:
         print("y_width:", self.y_width)
 
         # obstacle map generation
-        self.obstacle_map = [[False for _ in range(self.y_width)]
-                             for _ in range(self.x_width)]
+        self.obstacle_map = [
+            [False for _ in range(self.y_width)] for _ in range(self.x_width)
+        ]
         for ix in range(self.x_width):
             x = self.calc_grid_position(ix, self.min_x)
             for iy in range(self.y_width):
@@ -218,14 +244,16 @@ class AStarPlanner:
     @staticmethod
     def get_motion_model():
         # dx, dy, cost
-        motion = [[1, 0, 1],
-                  [0, 1, 1],
-                  [-1, 0, 1],
-                  [0, -1, 1],
-                  [-1, -1, math.sqrt(2)],
-                  [-1, 1, math.sqrt(2)],
-                  [1, -1, math.sqrt(2)],
-                  [1, 1, math.sqrt(2)]]
+        motion = [
+            [1, 0, 1],
+            [0, 1, 1],
+            [-1, 0, 1],
+            [0, -1, 1],
+            [-1, -1, math.sqrt(2)],
+            [-1, 1, math.sqrt(2)],
+            [1, -1, math.sqrt(2)],
+            [1, 1, math.sqrt(2)],
+        ]
 
         return motion
 
@@ -270,13 +298,13 @@ def main():
         plt.axis("equal")
 
     a_star = AStarPlanner(ox, oy, grid_size, robot_radius)
-    rx, ry = a_star.planning(sx, sy, gx, gy)
-
+    rx, ry, cost = a_star.planning(sx, sy, gx, gy)
+    print("Cost: ", cost)
     if show_animation:  # pragma: no cover
         plt.plot(rx, ry, "-r")
         plt.pause(0.001)
         plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
