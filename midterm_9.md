@@ -6,31 +6,30 @@ The assumption that any field can be wholly devoid of ethics is foolhardy. Robot
 # B
 The laws of robotics are oversimplifications of a complex field, and don’t even scratch the surface of implementation. Each law is algorithmically complex beyond almost anything we have developed today. What constitutes a human being? What does it mean to do harm? Does every robot have to have functions to prevent harm in order to avoid inaction? The first law alone assumes that a robot thinks and understands like we do. It assumes an innate understanding of things that not even all humans fully understand. The second law is not much better. Which humans does it listen to? All of them? Again, what constitutes harm? Does being told to work contrary to the robot's purpose harm someone by not fulfilling the original design of the robot? The third law makes an assumption that all robots are built to last, and that they understand what it means to protect itself. None of these questions or concepts are algorithmically simple. None of them are easily “taught” to a robot.
 
-An example of this could be self driving cars. An oversimplification via pseudo code may look something like this:
+An example of this could be self driving cars. An oversimplification via pseudo code may look something like this
 
+```
 While driving:
-
-If the path is blocked:
-    If there is time to stop
-        Stop
-    Otherwise,
-        If the obstacle big enough to cause harm to a passenger:
-            If swerving hurt someone else:
-                Choose between the passenger and the other person
-                based on goal to minimize harm
-            Else
-                Swerve
-        Else:
-            If I can prevent harm to myself without hurting someone else:
-    Swerve
+    If the path is blocked:
+        If there is time to stop
+            Stop
+        Otherwise,
+            If the obstacle big enough to cause harm to a passenger:
+                If swerving hurt someone else:
+                    Choose between the passenger and the other person
+                    based on goal to minimize harm
+                Else
+                    Swerve
+            Else:
+                If I can prevent harm to myself without hurting someone else:
+        Swerve
 Else:
-Hit the obstacle, minimize damage
+    Hit the obstacle, minimize damage
 Else:
-Follow path
-
+    Follow path
 If the driver wants to take control:
     Switch to driver control mode
-
+```
 
 # C
 It is interesting to me that there isn’t a system of liability already implemented with the direction that autonomous vehicles have been going. Unfortunately we may need more incidents like the one in Tempe before this is well regulated. In my opinion, like what is alluded to in the wiki page, in any case where a driver was not controlling the vehicle (level 5), the manufacturer should always be liable unless another third party caused the damage (someone hit the vehicle). When the driver and vehicle share control, it becomes much more complex. If something in the autonomous system is defective, it makes sense that the manufacturer would be held liable for a shared-control crash. Otherwise, blame could likely be placed on the driver.
