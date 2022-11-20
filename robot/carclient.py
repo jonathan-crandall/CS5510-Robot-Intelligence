@@ -1,6 +1,7 @@
 from enum import Enum
 from smbus2 import SMBus
-from carserver import DIRECTION, CMD
+from carserver import CMD, DIRECTION, Command
+import pickle
 import math
 
 
@@ -103,6 +104,7 @@ class YBCar(object):
             print("Car_Spin_Right I2C error")
 
     def servo(self, id, angle):
+        print(f"moving servo here with {id}, {angle}")
         try:
             reg = 0x03
             data = [id, angle]
@@ -115,7 +117,7 @@ class YBCar(object):
             print("Ctrl_Servo I2C error")
 
 
-class ClientCar:
+class CarClient:
 
     """
     Interface for sending / recieving commands to the car
@@ -134,14 +136,15 @@ class ClientCar:
             [cmd][arg][arg][arg]...
         """
 
-        cmd = data.pop(0)
-        print(cmd)
-        if cmd == CMD.MOVE:
+        cmd: Command = pickle.loads(data)
+        if cmd.type == CMD.MOVE:
             print("moving...")
-            self.car.ctrl(*data[:4])
-        if cmd == CMD.STOP:
+            self.car.ctrl(*cmd.params)
+        elif cmd.type == CMD.STOP:
             print("stopping...")
             self.car.stop()
-        if cmd == CMD.SERVO:
-            print("starting...")
-            self.car.servo(*data[:2])
+        elif cmd.type == CMD.SERVO:
+            print("Moving Servo...")
+            self.car.servo(*cmd.params)
+        else:
+            print(f"Invalid argument {cmd.type}")
