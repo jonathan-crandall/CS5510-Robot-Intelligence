@@ -3,6 +3,9 @@ from smbus2 import SMBus
 from carserver import CMD, DIRECTION, Command
 import pickle
 import math
+import time
+import RPi.GPIO as GPIO
+import threading
 
 
 class YBCar(object):
@@ -123,8 +126,9 @@ class CarClient:
     Interface for sending / recieving commands to the car
     """
 
-    def __init__(self):
+    def __init__(self, debug: bool):
         self.car = YBCar()
+        self.debug = debug
 
     def recieve_command(self, data: bytearray):
         """
@@ -148,3 +152,47 @@ class CarClient:
             self.car.servo(*cmd.params)
         else:
             print(f"Invalid argument {cmd.type}")
+
+
+class CollisionDetector(threading.Thread):
+    def __init__(self, car: CarClient, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.car = car
+
+    def run(self):
+        TL1 = 13
+        TL2 = 15
+        TR1 = 11
+        TR2 = 7
+
+        GPIO.setmode(GPIO.BOARD)
+
+        GPIO.setwarnings(False)
+
+        GPIO.setup(TL1, GPIO.IN)
+        GPIO.setup(TL2, GPIO.IN)
+        GPIO.setup(TR1, GPIO.IN)
+        GPIO.setup(TR2, GPIO.IN)
+
+        value_store = []
+        while True:
+
+            value_store.append(
+                (
+                    not GPIO.input(TL1),
+                    not GPIO.input(TL2),
+                    not GPIO.input(TR1),
+                    not GPIO.input(TR2),
+                )
+            )
+
+            if all([any(x) for x in value_store]):
+                print("Table edge detected")
+                self.car.car.stop()
+            # Only keep 5
+            if len(value_store) > 5:
+                value_store.pop(0)
+
+            if self.car.debug:
+                print(f"{value_store}")
+            time.sleep(0.01)
