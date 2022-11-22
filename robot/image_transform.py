@@ -47,8 +47,8 @@ class ImgTransform:
             cv2.putText(canvas, character, tuple(c), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
 
         # Rearranging the order of the corner points
-        approx_corners = [approx_corners[i] for i in [0, 2, 1, 3]]
-
+        print(approx_corners)
+        approx_corners = [approx_corners[i] for i in [1, 2, 0, 3]]
         plt.imshow(canvas)
         plt.title('Corner Points: Douglas-Peucker')
         plt.show()
@@ -58,7 +58,7 @@ class ImgTransform:
 
         w1 = np.sqrt((corners[0][0] - corners[1][0]) ** 2 + (corners[0][1] - corners[1][1]) ** 2)
         w2 = np.sqrt((corners[2][0] - corners[3][0]) ** 2 + (corners[2][1] - corners[3][1]) ** 2)
-        w = max(int(w1), int(w2))
+        w = min(int(w1), int(w2))
 
         h1 = np.sqrt((corners[0][0] - corners[2][0]) ** 2 + (corners[0][1] - corners[2][1]) ** 2)
         h2 = np.sqrt((corners[1][0] - corners[3][0]) ** 2 + (corners[1][1] - corners[3][1]) ** 2)
@@ -124,9 +124,12 @@ class ImgTransform:
 
         plt.show()
 
+        cropped = cv2.cvtColor(cropped, cv2.COLOR_BGR2RGB)
+        cv2.imwrite("images/cropped.jpg", cropped)
+
 # %%
 # Example usage
-image = cv2.imread('images/table_1.jpg')
+image = cv2.imread('images/workspace.jpg')
 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
 transform = ImgTransform()
