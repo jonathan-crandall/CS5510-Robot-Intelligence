@@ -1,5 +1,9 @@
 from enum import Enum
 from dataclasses import dataclass
+from typing import Optional
+import pickle
+from socket import socket
+from dataclasses import dataclass
 
 
 @dataclass
@@ -8,14 +12,26 @@ class DIRECTION:
     REV = 0
 
 
+class CMD(Enum):
+    MOVE = 1
+    SERVO = 2
+    STOP = 3
+
+
 @dataclass
-class CMD:
-    MOVE = 0x10
-    STOP = 0x20hv
-    SERVO = 0x30
+class Command:
+    type: CMD
+    params: list = None
 
 
 class ServerCar:
+    def __init__(self, conn: socket) -> None:
+        self.connection: socket = conn
+
+    def send(self, command: Command):
+        binary = pickle.dumps(command)
+        self.connection.sendall(binary)
+
     def move(self, left_velocity, right_velocity):
         left_direction = DIRECTION.FWD
         right_direction = DIRECTION.FWD
@@ -28,18 +44,15 @@ class ServerCar:
             right_velocity = abs(right_velocity)
             right_direction = DIRECTION.REV
 
-        return bytearray(
-            (
+        self.send(
+            Command(
                 CMD.MOVE,
-                left_direction,
-                left_velocity,
-                right_direction,
-                right_velocity,
+                [left_direction, left_velocity, right_direction, right_velocity],
             )
         )
 
     def stop(self):
-        return CMD.STOP.to_bytes(1, "big")
+        self.send(Command(CMD.STOP))
 
     def servo(self, id, angle):
-        return bytearray((CMD.SERVO, id, angle))
+        self.send(Command(CMD.SERVO, [id, angle]))
