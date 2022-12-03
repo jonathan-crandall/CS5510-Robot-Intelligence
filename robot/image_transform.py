@@ -6,7 +6,6 @@ import numpy as np
 class ImgTransform:
 
     def __init__(self, image):
-        
         filtered_image = self.apply_filter(image)
         threshold_image = self.apply_threshold(filtered_image)
 
@@ -125,13 +124,4 @@ class ImgTransform:
         cropped = cv2.cvtColor(cropped, cv2.COLOR_BGR2RGB)
         # cv2.imwrite("images/cropped.jpg", cropped)
         return cropped
-        
-
-# %%
-# Example usage
-image = cv2.imread('images/workspace.jpg')
-image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-transform = ImgTransform()
-transform.transform(image)
 # %%
