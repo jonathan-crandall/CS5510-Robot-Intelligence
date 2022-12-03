@@ -100,7 +100,6 @@ class ImgTransform:
 
         h, w = img.shape[:2]
         H, _ = cv2.findHomography(src, dst, method=cv2.RANSAC, ransacReprojThreshold=3.0)
-        print('\nThe homography matrix is: \n', H)
         un_warped = cv2.warpPerspective(img, H, (w, h), flags=cv2.INTER_LINEAR)
 
         # plot
@@ -126,6 +125,5 @@ class ImgTransform:
         un_warped = self.unwarp(image, np.float32(self.corners), self.destination_points)
 
         cropped = un_warped[0:self.h, 0:self.w]
-        cropped = cv2.cvtColor(cropped, cv2.COLOR_BGR2RGB)
-        cv2.imwrite("images/cropped.jpg", cropped)
+        # cropped = cv2.cvtColor(cropped, cv2.COLOR_BGR2R)
         return cropped

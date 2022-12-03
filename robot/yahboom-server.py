@@ -53,20 +53,24 @@ def locate():
 
     i = 0
     while videoFeed.isOpened():
-        videoFeed.set(cv2.CAP_PROP_POS_MSEC, (i * 250))
+        videoFeed.set(cv2.CAP_PROP_POS_MSEC, (i * 66))
         ret, frame = videoFeed.read()
 
         frame = space_finder.transform(frame)
 
-        if i % 8:
-            cv2.imshow("Demo", frame)
-            cv2.waitKey(1)
+        # cv2.imshow("Demo", frame)
+        # cv2.waitKey(1)
 
         if ret == False:
             break
 
-        cv2.imwrite("ReadFrame.jpg", frame)
-        results = model("ReadFrame.jpg")
+        results = model(frame)
+        output = results.render()
+        cv2.imshow("Demo", output[0])
+        input()
+        cv2.imwrite(f"ball_{i}")
+        cv2.waitKey(1)
+
         i += 1
 
     videoFeed.release()
