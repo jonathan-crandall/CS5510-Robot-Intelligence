@@ -6,6 +6,8 @@ import numpy as np
 class ImgTransform:
 
     def __init__(self, image):
+        fig, self.axs = plt.subplots(3, 2)
+        fig.delaxes(self.axs[2,1])
         filtered_image = self.apply_filter(image)
         threshold_image = self.apply_threshold(filtered_image)
 
@@ -15,8 +17,8 @@ class ImgTransform:
         self.destination_points, self.h, self.w = self.get_destination_points(self.corners)
 
         cropped = self.transform(image)
-        plt.imshow(cropped)
-        plt.title('Filtered Image')
+        self.axs[2, 0].imshow(cropped)
+        self.axs[2, 0].set_title('Filtered Image')
         plt.show()
 
         # f, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 8))
@@ -31,17 +33,15 @@ class ImgTransform:
         gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
         kernel = np.ones((5, 5), np.float32) / 15
         filtered = cv2.filter2D(gray, -1, kernel)
-        plt.imshow(cv2.cvtColor(filtered, cv2.COLOR_BGR2RGB))
-        plt.title('Filtered Image')
-        plt.show()
+        self.axs[0, 0].imshow(cv2.cvtColor(filtered, cv2.COLOR_BGR2RGB))
+        self.axs[0, 0].set_title('Filtered Image')
         return filtered
 
     def apply_threshold(self, filtered):
 
         ret, thresh = cv2.threshold(filtered, 250, 255, cv2.THRESH_OTSU)
-        plt.imshow(cv2.cvtColor(thresh, cv2.COLOR_BGR2RGB))
-        plt.title('After applying OTSU threshold')
-        plt.show()
+        self.axs[0, 1].imshow(cv2.cvtColor(thresh, cv2.COLOR_BGR2RGB))
+        self.axs[0, 1].set_title('After applying OTSU threshold')
         return thresh
 
     def detect_contour(self, img, image_shape):
@@ -50,9 +50,8 @@ class ImgTransform:
         contours, hierarchy = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
         cnt = sorted(contours, key=cv2.contourArea, reverse=True)[0]
         cv2.drawContours(canvas, cnt, -1, (0, 255, 255), 3)
-        plt.title('Largest Contour')
-        plt.imshow(canvas)
-        plt.show()
+        self.axs[1, 0].set_title('Largest Contour')
+        self.axs[1, 0].imshow(canvas)
         return canvas, cnt
 
     def detect_corners_from_contour(self, canvas, cnt):
@@ -70,9 +69,8 @@ class ImgTransform:
         # Rearranging the order of the corner points
         print(approx_corners)
         approx_corners = [approx_corners[i] for i in [1, 2, 0, 3]]
-        plt.imshow(canvas)
-        plt.title('Corner Points: Douglas-Peucker')
-        plt.show()
+        self.axs[1, 1].imshow(canvas)
+        self.axs[1, 1].set_title('Corner Points: Douglas-Peucker')
         return approx_corners
     
     def get_destination_points(self, corners):
@@ -100,26 +98,9 @@ class ImgTransform:
 
         h, w = img.shape[:2]
         H, _ = cv2.findHomography(src, dst, method=cv2.RANSAC, ransacReprojThreshold=3.0)
-        print('\nThe homography matrix is: \n', H)
+        # print('\nThe homography matrix is: \n', H)
         un_warped = cv2.warpPerspective(img, H, (w, h), flags=cv2.INTER_LINEAR)
 
-        # plot
-
-        f, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 8))
-        # f.subplots_adjust(hspace=.2, wspace=.05)
-        ax1.imshow(img)
-        ax1.set_title('Original Image')
-
-        x = [src[0][0], src[2][0], src[3][0], src[1][0], src[0][0]]
-        y = [src[0][1], src[2][1], src[3][1], src[1][1], src[0][1]]
-
-        ax2.imshow(img)
-        ax2.plot(x, y, color='yellow', linewidth=3)
-        ax2.set_ylim([h, 0])
-        ax2.set_xlim([0, w])
-        ax2.set_title('Target Area')
-
-        plt.show()
         return un_warped
 
     def transform(self, image):
