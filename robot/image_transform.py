@@ -5,6 +5,23 @@ import numpy as np
 
 class ImgTransform:
 
+    def __init__(self, image):
+        
+        filtered_image = self.apply_filter(image)
+        threshold_image = self.apply_threshold(filtered_image)
+
+        cnv, largest_contour = self.detect_contour(threshold_image, image.shape)
+        self.corners = self.detect_corners_from_contour(cnv, largest_contour)
+
+        self.destination_points, self.h, self.w = self.get_destination_points(self.corners)
+
+        # f, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 8))
+        # # f.subplots_adjust(hspace=.2, wspace=.05)
+        # ax1.imshow(un_warped)
+        # ax2.imshow(cropped)
+        # plt.show()
+
+
     def apply_filter(self, image):
 
         gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
@@ -102,30 +119,13 @@ class ImgTransform:
         return un_warped
 
     def transform(self, image):
+        un_warped = self.unwarp(image, np.float32(self.corners), self.destination_points)
 
-        plt.imshow(image)
-        plt.title('Original Image')
-        plt.show()
-
-        filtered_image = self.apply_filter(image)
-        threshold_image = self.apply_threshold(filtered_image)
-
-        cnv, largest_contour = self.detect_contour(threshold_image, image.shape)
-        corners = self.detect_corners_from_contour(cnv, largest_contour)
-
-        destination_points, h, w = self.get_destination_points(corners)
-        un_warped = self.unwarp(image, np.float32(corners), destination_points)
-
-        cropped = un_warped[0:h, 0:w]
-        f, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 8))
-        # f.subplots_adjust(hspace=.2, wspace=.05)
-        ax1.imshow(un_warped)
-        ax2.imshow(cropped)
-
-        plt.show()
-
+        cropped = un_warped[0:self.h, 0:self.w]
         cropped = cv2.cvtColor(cropped, cv2.COLOR_BGR2RGB)
-        cv2.imwrite("images/cropped.jpg", cropped)
+        # cv2.imwrite("images/cropped.jpg", cropped)
+        return cropped
+        
 
 # %%
 # Example usage
