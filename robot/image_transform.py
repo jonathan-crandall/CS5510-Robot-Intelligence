@@ -6,7 +6,6 @@ import numpy as np
 class ImgTransform:
 
     def __init__(self, image):
-        
         filtered_image = self.apply_filter(image)
         threshold_image = self.apply_threshold(filtered_image)
 
