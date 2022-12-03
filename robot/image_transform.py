@@ -14,6 +14,14 @@ class ImgTransform:
 
         self.destination_points, self.h, self.w = self.get_destination_points(self.corners)
 
+        un_warped = self.unwarp(image, np.float32(self.corners), self.destination_points)
+        cropped = un_warped[0:self.h, 0:self.w]
+        cropped = cv2.cvtColor(cropped, cv2.COLOR_BGR2RGB)
+
+        plt.imshow(cropped)
+        plt.title('Filtered Image')
+        plt.show()
+
         # f, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 8))
         # # f.subplots_adjust(hspace=.2, wspace=.05)
         # ax1.imshow(un_warped)
@@ -124,4 +132,3 @@ class ImgTransform:
         cropped = cv2.cvtColor(cropped, cv2.COLOR_BGR2RGB)
         # cv2.imwrite("images/cropped.jpg", cropped)
         return cropped
-# %%
