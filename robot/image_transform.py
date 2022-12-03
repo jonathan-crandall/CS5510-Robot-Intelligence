@@ -130,5 +130,5 @@ class ImgTransform:
 
         cropped = un_warped[0:self.h, 0:self.w]
         cropped = cv2.cvtColor(cropped, cv2.COLOR_BGR2RGB)
-        # cv2.imwrite("images/cropped.jpg", cropped)
+        cv2.imwrite("images/cropped.jpg", cropped)
         return cropped

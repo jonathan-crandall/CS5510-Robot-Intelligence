@@ -57,7 +57,10 @@ def locate():
         ret, frame = videoFeed.read()
 
         frame = space_finder.transform(frame)
-        cv2.imshow("Demo", frame)
+
+        if i % 8:
+            cv2.imshow("Demo", frame)
+            cv2.waitKey(1)
 
         if ret == False:
             break
