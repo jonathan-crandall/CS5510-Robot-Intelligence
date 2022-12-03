@@ -15,10 +15,7 @@ class ImgTransform:
 
         self.destination_points, self.h, self.w = self.get_destination_points(self.corners)
 
-        un_warped = self.unwarp(image, np.float32(self.corners), self.destination_points)
-        cropped = un_warped[0:self.h, 0:self.w]
-        cropped = cv2.cvtColor(cropped, cv2.COLOR_BGR2RGB)
-
+        cropped = self.transform(image)
         plt.imshow(cropped)
         plt.title('Filtered Image')
         plt.show()
