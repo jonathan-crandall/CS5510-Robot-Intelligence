@@ -7,7 +7,10 @@ class ImgTransform:
 
     def __init__(self, image):
         fig, self.axs = plt.subplots(3, 2)
-        fig.delaxes(self.axs[2,1])
+        
+        self.axs[0, 0].imshow(image)
+        self.axs[0, 0].set_title('Unfiltered Image')
+
         filtered_image = self.apply_filter(image)
         threshold_image = self.apply_threshold(filtered_image)
 
@@ -17,8 +20,9 @@ class ImgTransform:
         self.destination_points, self.h, self.w = self.get_destination_points(self.corners)
 
         cropped = self.transform(image)
-        self.axs[2, 0].imshow(cropped)
-        self.axs[2, 0].set_title('Filtered Image')
+        self.axs[2, 1].imshow(cropped)
+        self.axs[2, 1].set_title('Filtered Image')
+        fig.tight_layout(pad=0.5)
         plt.show()
 
         # f, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 8))
@@ -33,15 +37,15 @@ class ImgTransform:
         gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
         kernel = np.ones((5, 5), np.float32) / 15
         filtered = cv2.filter2D(gray, -1, kernel)
-        self.axs[0, 0].imshow(cv2.cvtColor(filtered, cv2.COLOR_BGR2RGB))
-        self.axs[0, 0].set_title('Filtered Image')
+        self.axs[0, 1].imshow(cv2.cvtColor(filtered, cv2.COLOR_BGR2RGB))
+        self.axs[0, 1].set_title('Filtered Image')
         return filtered
 
     def apply_threshold(self, filtered):
 
         ret, thresh = cv2.threshold(filtered, 250, 255, cv2.THRESH_OTSU)
-        self.axs[0, 1].imshow(cv2.cvtColor(thresh, cv2.COLOR_BGR2RGB))
-        self.axs[0, 1].set_title('After applying OTSU threshold')
+        self.axs[1, 0].imshow(cv2.cvtColor(thresh, cv2.COLOR_BGR2RGB))
+        self.axs[1, 0].set_title('After applying OTSU threshold')
         return thresh
 
     def detect_contour(self, img, image_shape):
@@ -50,8 +54,8 @@ class ImgTransform:
         contours, hierarchy = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
         cnt = sorted(contours, key=cv2.contourArea, reverse=True)[0]
         cv2.drawContours(canvas, cnt, -1, (0, 255, 255), 3)
-        self.axs[1, 0].set_title('Largest Contour')
-        self.axs[1, 0].imshow(canvas)
+        self.axs[1, 1].set_title('Largest Contour')
+        self.axs[1, 1].imshow(canvas)
         return canvas, cnt
 
     def detect_corners_from_contour(self, canvas, cnt):
@@ -60,17 +64,17 @@ class ImgTransform:
         approx_corners = cv2.approxPolyDP(cnt, epsilon, True)
         cv2.drawContours(canvas, approx_corners, -1, (255, 255, 0), 10)
         approx_corners = sorted(np.concatenate(approx_corners).tolist())
-        print('\nThe corner points are ...\n')
+        # print('\nThe corner points are ...\n')
         for index, c in enumerate(approx_corners):
             character = chr(65 + index)
-            print(character, ':', c)
+            # print(character, ':', c)
             cv2.putText(canvas, character, tuple(c), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
 
         # Rearranging the order of the corner points
-        print(approx_corners)
+        # print(approx_corners)
         approx_corners = [approx_corners[i] for i in [1, 2, 0, 3]]
-        self.axs[1, 1].imshow(canvas)
-        self.axs[1, 1].set_title('Corner Points: Douglas-Peucker')
+        self.axs[2, 0].imshow(canvas)
+        self.axs[2, 0].set_title('Corner Points: Douglas-Peucker')
         return approx_corners
     
     def get_destination_points(self, corners):
@@ -85,12 +89,12 @@ class ImgTransform:
 
         destination_corners = np.float32([(0, 0), (w - 1, 0), (0, h - 1), (w - 1, h - 1)])
 
-        print('\nThe destination points are: \n')
+        # print('\nThe destination points are: \n')
         for index, c in enumerate(destination_corners):
             character = chr(65 + index) + "'"
-            print(character, ':', c)
+            # print(character, ':', c)
 
-        print('\nThe approximated height and width of the original image is: \n', (h, w))
+        # print('\nThe approximated height and width of the original image is: \n', (h, w))
         return destination_corners, h, w
 
 
@@ -107,5 +111,15 @@ class ImgTransform:
         un_warped = self.unwarp(image, np.float32(self.corners), self.destination_points)
 
         cropped = un_warped[0:self.h, 0:self.w]
-        # cropped = cv2.cvtColor(cropped, cv2.COLOR_BGR2R)
+        cropped = cv2.cvtColor(cropped, cv2.COLOR_BGR2RGB)
+        # cv2.imwrite("images/cropped.jpg", cropped)
         return cropped
+
+# %%
+# Example usage
+image = cv2.imread('images/workspace.jpg')
+image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+transform = ImgTransform(image)
+transform.transform(image)
+# %%
