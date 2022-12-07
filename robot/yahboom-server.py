@@ -67,8 +67,6 @@ def locate():
         results = model(frame)
         output = results.render()
         cv2.imshow("Demo", output[0])
-        input()
-        cv2.imwrite(f"ball_{i}")
         cv2.waitKey(1)
 
         i += 1
