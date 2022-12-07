@@ -1,5 +1,6 @@
 import socket
 from carserver import ServerCar
+import threading
 
 import time
 import sys
@@ -52,14 +53,19 @@ def locate():
     model = torch.hub.load("ultralytics/yolov5", "custom", path="yolonetwork.pt")
 
     i = 0
+
+    videoOutput = cv2.VideoWriter(
+        "output_video.mp4",
+        cv2.VideoWriter_fourcc(*"MP4V"),
+        15,
+        space_finder.cropped.shape,
+    )
+
     while videoFeed.isOpened():
         videoFeed.set(cv2.CAP_PROP_POS_MSEC, (i * 66))
         ret, frame = videoFeed.read()
 
         frame = space_finder.transform(frame)
-
-        # cv2.imshow("Demo", frame)
-        # cv2.waitKey(1)
 
         if ret == False:
             break

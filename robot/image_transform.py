@@ -16,8 +16,8 @@ class ImgTransform:
 
         self.destination_points, self.h, self.w = self.get_destination_points(self.corners)
 
-        cropped = self.transform(image)
-        self.axs[2, 0].imshow(cropped)
+        self.cropped = self.transform(image)
+        self.axs[2, 0].imshow(self.cropped)
         self.axs[2, 0].set_title('Filtered Image')
         plt.show()
 
