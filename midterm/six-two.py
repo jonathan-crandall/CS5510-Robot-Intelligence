@@ -14,7 +14,7 @@ path = 0
 if len(sys.argv) >= 2 and os.path.exists(sys.argv[1]):
     path = sys.argv[1]
 
-print(path)
+print(f"Opening camera / video {path}, this may take some time...")
 detector = FER()
 cap = cv2.VideoCapture(path)
 

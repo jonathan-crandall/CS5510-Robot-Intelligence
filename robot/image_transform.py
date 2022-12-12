@@ -20,8 +20,8 @@ class ImgTransform:
         self.destination_points, self.h, self.w = self.get_destination_points(
             self.corners
         )
+        self.cropped = cv2.cvtColor(self.transform(image), cv2.COLOR_BGR2RGB)
 
-        self.cropped = self.transform(image)
         self.axs[2, 1].imshow(self.cropped)
         self.axs[2, 1].set_title("Filtered Image")
         fig.tight_layout(pad=0.5)
@@ -136,16 +136,17 @@ class ImgTransform:
         )
 
         cropped = un_warped[0 : self.h, 0 : self.w]
-        cropped = cv2.cvtColor(cropped, cv2.COLOR_BGR2RGB)
         # cv2.imwrite("images/cropped.jpg", cropped)
         return cropped
 
 
 # %%
 # Example usage
-image = cv2.imread("images/workspace.jpg")
-image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-transform = ImgTransform(image)
-transform.transform(image)
+if __name__ == "__main__":
+    image = cv2.imread("images/workspace.jpg")
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+    transform = ImgTransform(image)
+    transform.transform(image)
 # %%

@@ -1,6 +1,6 @@
 import socket
 from carserver import ServerCar
-import threading
+from threading import Thread
 
 import time
 import sys
@@ -35,6 +35,7 @@ def server():
                         case ["C", *params]:
                             car.servo(*[int(x) for x in params])
                         case ["T", *params]:
+                            print(params)
                             car.move(*[int(x) for x in params][:-1])
                             time.sleep(float(params[-1]))
                             car.stop()
@@ -54,13 +55,6 @@ def locate():
 
     i = 0
 
-    videoOutput = cv2.VideoWriter(
-        "output_video.mp4",
-        cv2.VideoWriter_fourcc(*"MP4V"),
-        15,
-        space_finder.cropped.shape,
-    )
-
     while videoFeed.isOpened():
         videoFeed.set(cv2.CAP_PROP_POS_MSEC, (i * 66))
         ret, frame = videoFeed.read()
@@ -71,8 +65,8 @@ def locate():
             break
 
         results = model(frame)
-        output = results.render()
-        cv2.imshow("Demo", output[0])
+        output = results.render()[0]
+        cv2.imshow("Demo", output)
         cv2.waitKey(1)
 
         i += 1
@@ -83,7 +77,7 @@ def locate():
 
 if __name__ == "__main__":
     print("Staring location function")
-    locate()
-    print("start server?")
-    input()
+    image_processor = Thread(target=locate)
+    image_processor.daemon = True
+    image_processor.start()
     server()

@@ -9,3 +9,4 @@ output
 model
 .jpg
 .zip
+__pycache__
