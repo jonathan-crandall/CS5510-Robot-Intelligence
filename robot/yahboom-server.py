@@ -11,7 +11,7 @@ import pandas as pd
 from carserver import ServerCar
 from image_transform import ImgTransform
 from locationtracking import LocationTracker
-
+from camera_read import image_server, process as rpi_process
 HOST = ""  # Standard loopback interface address (localhost)
 PORT = 7777  # Port to listen on (non-privileged ports are > 1023)
 
@@ -216,6 +216,8 @@ def locate(commandQueue: Queue):
 
 
 if __name__ == "__main__":
+    
+    threads = []
 
     commands = Queue()
 
@@ -223,13 +225,21 @@ if __name__ == "__main__":
     # all are enabled by default
 
     if "-i" not in sys.argv:
-        print("Staring location function")
-        image_processor = Thread(target=locate, args=[commands])
-        image_processor.daemon = True
-        image_processor.start()
+        print("Staring location function ...")
+        threads.append(Thread(target=locate, args=[commands],daemon=True))
 
     if "-s" not in sys.argv:
-        print("Starting command and control server")
-        server(commands)
+        print("Starting command and control server ...")
+        threads.append(Thread(target=server, args=[commands], daemon=True))
+        
+    if "-pi" not in sys.argv:
+        buffer = Queue()
+        print("Starting localized ball tracker ...")
+        threads.append(Thread(target=image_server, args=[buffer], daemon=True))
+        threads.append(Thread(target=rpi_process, args=[buffer, commands], daemon=True))
 
-    image_processor.join()
+    for t in threads:
+        t.start()
+        
+    for t in threads:
+        t.join()

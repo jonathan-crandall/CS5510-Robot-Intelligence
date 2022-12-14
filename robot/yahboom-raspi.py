@@ -22,6 +22,7 @@ def videoStream():
     client_socket.connect((SERVER_HOST, CAMERA_PORT))
     connection = client_socket.makefile("wb")
 
+    print("connected to server for image streaming...")
     # Capture initial frame
     cam = cv2.VideoCapture(0)
 
@@ -78,8 +79,8 @@ if __name__ == "__main__":
 
     # Create camera thread
     print(sys.argv)
-    if "-C" in sys.argv:
-        print("starting camera app")
+    if "-C" not in sys.argv:
+        print("starting camera stream")
         camera_thread = Thread(target=videoStream)
         camera_thread.daemon = True
         camera_thread.start()

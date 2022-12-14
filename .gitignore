@@ -10,3 +10,4 @@ model
 .jpg
 .zip
 __pycache__
+.venv
