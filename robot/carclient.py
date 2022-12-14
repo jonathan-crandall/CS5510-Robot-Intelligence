@@ -7,7 +7,9 @@ import time
 import RPi.GPIO as GPIO
 import threading
 
-
+# this class was shamelessly stoen straing from yahboom
+# which is fine because its hot garabe and had to be modified 
+# in order to support better commands
 class YBCar(object):
     def get_i2c_device(self, address, i2c_bus):
         self._addr = address
@@ -139,7 +141,6 @@ class CarClient:
 
             [cmd][arg][arg][arg]...
         """
-
         cmd: Command = pickle.loads(data)
         if cmd.type == CMD.MOVE:
             print("moving...")
@@ -155,11 +156,23 @@ class CarClient:
 
 
 class CollisionDetector(threading.Thread):
+    """
+    Runs the internal collussion detection models, so that the control
+    server doesn't have to worry about it
+
+    """
     def __init__(self, car: CarClient, *args, **kwargs) -> None:
+        """
+
+        Args:
+            car (CarClient): The yahboom low IC2 car model
+        """
         super().__init__(*args, **kwargs)
         self.car = car
 
     def run(self):
+        
+        # Init the front facing reflection sencors
         TL1 = 13
         TL2 = 15
         TR1 = 11
@@ -186,10 +199,12 @@ class CollisionDetector(threading.Thread):
                 )
             )
 
+            # If reflection not detected, like on tape
             if all([any(x) for x in value_store]):
                 print("Table edge detected")
                 self.car.car.stop()
-            # Only keep 5
+                
+            # Store a history to make sure that we don't get some incorrect reads
             if len(value_store) > 5:
                 value_store.pop(0)
 

@@ -1,6 +1,5 @@
 from enum import Enum
 from dataclasses import dataclass
-from typing import Optional
 import pickle
 from socket import socket
 from dataclasses import dataclass
@@ -25,6 +24,11 @@ class Command:
 
 
 class ServerCar:
+
+    """
+    Contains the logic for interfacing with the car and sending it commands
+    """
+
     def __init__(self, conn: socket) -> None:
         self.connection: socket = conn
 
